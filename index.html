@@ -1,860 +1,99 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Control Presupuestal ASA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Presupuestal ASA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--text:#132238;--muted:#667085;--line:#e4e7ec;--navy:#123e5d;--blue:#175cd3;--red:#7a1f1f;--row:#fbfcfe}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:1800px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:14px}
+.brand{font-size:44px;font-weight:900;letter-spacing:.03em;line-height:.95;color:var(--navy)}h1{margin:6px 0 0;font-size:23px}.subtitle{margin-top:4px;color:#344054;font-size:16px}
+.toolbar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.control{min-width:120px}label{display:block;font-size:11px;font-weight:800;color:#475467;margin-bottom:5px}
+select{width:100%;padding:9px 12px;border:1px solid #d0d5dd;border-radius:8px;background:white;color:#102a43;font-size:14px}
+.toggle-box{background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:8px 12px;min-width:180px}.toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.switch{position:relative;width:46px;height:24px;background:#cfd6df;border-radius:999px;cursor:pointer;transition:.2s}.switch::after{content:"";position:absolute;width:20px;height:20px;top:2px;left:2px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}.switch.on{background:var(--blue)}.switch.on::after{left:24px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.card{background:var(--card);border-radius:12px;box-shadow:0 2px 10px rgba(16,24,40,.05);border:1px solid #eef1f4}
+.kpi{padding:16px 18px}.kpi-title{color:#3b5871;font-size:12px;font-weight:800;text-transform:uppercase}.kpi-value{margin-top:8px;font-size:30px;font-weight:900}.kpi-sub{margin-top:4px;font-size:13px;font-weight:700}.blue{color:var(--blue)}.red{color:var(--red)}.muted{color:var(--muted)}
+.visual-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px;margin-bottom:14px}.visual-card{padding:14px 16px;min-height:250px}.visual-title{font-size:13px;font-weight:900;color:#17324b;margin-bottom:10px}.chart-wrap{height:200px}
+.rank-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}.rank-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;font-size:12px}.rank-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rank-val{font-weight:900}.rank-bar{grid-column:1/-1;height:7px;background:#eef2f6;border-radius:999px;overflow:hidden;margin-top:-4px}.rank-fill{height:100%;border-radius:999px}.rank-fill.save{background:#6aa7ff}.rank-fill.over{background:#9b3b3b}
+.table-card{overflow:hidden}.table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{padding:8px 12px;border:1px solid #d7dee7;border-radius:8px;background:#f6f8fb;font-size:12px;font-weight:800;color:#21415e}.tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.table-wrap{overflow:auto;max-height:650px}table{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;background:#fff}th,td{padding:7px 8px;border-right:1px solid #edf0f3;border-bottom:1px solid #edf0f3;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:3}thead th{position:sticky;top:0;z-index:4;background:var(--navy);color:#fff;font-weight:900}thead tr:nth-child(2) th{top:31px;background:#eaf0f5;color:#344054}
+tbody tr.rubro td{background:#fff;font-weight:800}tbody tr.rubro td:first-child{background:#fff}tbody tr.partida td{background:var(--row);color:#475467}tbody tr.partida td:first-child{background:var(--row);padding-left:28px}
+.toggle{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:6px;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;font-weight:900}.diff-red{color:var(--red);font-weight:900}.diff-blue{color:var(--blue);font-weight:900}.diff-neutral{color:#667085;font-weight:800}.total{font-weight:900;background:#e8f1ff!important}
+.floating-total{position:sticky;bottom:0;z-index:7;display:grid;grid-template-columns:minmax(260px,1.6fr) repeat(4,minmax(140px,1fr));background:#dceaff;border-top:1px solid #b7c9df;font-weight:900;font-size:12px;box-shadow:0 -2px 8px rgba(16,24,40,.06)}.floating-total div{padding:10px 12px;text-align:right;border-right:1px solid #cbd8e6;white-space:nowrap}.floating-total div:first-child{text-align:left}
+.status{margin-top:6px;font-size:11px;color:#667085;text-align:right}.error{display:none;background:#fff1f2;color:#8a1c1c;border:1px solid #fecdd3;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:12px}
+@media(max-width:1100px){.cards{grid-template-columns:1fr 1fr}.visual-grid{grid-template-columns:1fr}.top{flex-direction:column}.toolbar{width:100%}}
+</style>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <style>
-    :root{
-      --bg:#f4f6f8;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#667085;
-      --line:#e4e7ec;
-      --header:#173f5f;
-      --header2:#edf3f7;
-      --over:#7f1d1d;
-      --over-bg:#fee2e2;
-      --save:#1d4ed8;
-      --save-bg:#dbeafe;
-      --neutral:#475467;
-      --neutral-bg:#f2f4f7;
-      --accent:#0f5b78;
-      --child:#fafcff;
-    }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,Segoe UI,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-
-    .wrap{
-      max-width:1800px;
-      margin:auto;
-      padding:24px;
-    }
-
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:20px;
-      margin-bottom:16px;
-    }
-
-    h1{
-      margin:0;
-      font-size:28px;
-      color:#102a43;
-    }
-
-    .subtitle{
-      margin-top:5px;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .status{
-      color:var(--muted);
-      font-size:11px;
-      text-align:right;
-    }
-
-    .controls{
-      display:flex;
-      gap:12px;
-      align-items:end;
-      background:var(--card);
-      padding:14px 16px;
-      border-radius:14px;
-      box-shadow:0 2px 12px rgba(16,24,40,.05);
-      margin-bottom:16px;
-    }
-
-    label{
-      display:block;
-      font-size:11px;
-      font-weight:800;
-      color:var(--muted);
-      margin-bottom:5px;
-      letter-spacing:.03em;
-    }
-
-    select{
-      padding:9px 12px;
-      border:1px solid var(--line);
-      border-radius:9px;
-      min-width:130px;
-      background:#fff;
-      color:var(--text);
-      font-size:14px;
-    }
-
-    .cut{
-      margin-left:auto;
-      background:#eef6f9;
-      color:#0f5b78;
-      padding:9px 12px;
-      border-radius:9px;
-      font-size:13px;
-      font-weight:700;
-    }
-
-    .card{
-      background:var(--card);
-      border-radius:14px;
-      box-shadow:0 2px 12px rgba(16,24,40,.05);
-      margin-bottom:18px;
-      overflow:hidden;
-    }
-
-    .card-head{
-      padding:16px 18px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-    }
-
-    .card-head h2{
-      margin:0;
-      font-size:17px;
-      color:#102a43;
-    }
-
-    .card-head p{
-      margin:3px 0 0;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .legend{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      font-size:11px;
-    }
-
-    .legend span{
-      padding:5px 8px;
-      border-radius:999px;
-      font-weight:700;
-    }
-
-    .lg-over{background:var(--over-bg);color:var(--over)}
-    .lg-save{background:var(--save-bg);color:var(--save)}
-    .lg-neutral{background:var(--neutral-bg);color:var(--neutral)}
-
-    .table-wrap{
-      overflow:auto;
-      max-height:680px;
-    }
-
-    table{
-      border-collapse:separate;
-      border-spacing:0;
-      width:100%;
-      font-size:12px;
-    }
-
-    th,td{
-      padding:7px 8px;
-      border-right:1px solid #eef1f4;
-      border-bottom:1px solid #eef1f4;
-      text-align:right;
-      white-space:nowrap;
-    }
-
-    th:first-child,td:first-child{
-      text-align:left;
-      position:sticky;
-      left:0;
-      z-index:3;
-    }
-
-    thead th{
-      position:sticky;
-      top:0;
-      z-index:4;
-      background:#f8fafc;
-      color:#344054;
-      font-weight:800;
-    }
-
-    thead tr:first-child th{
-      background:var(--header);
-      color:#fff;
-      text-align:center;
-      font-size:12px;
-      border-color:#2c5674;
-    }
-
-    thead tr:nth-child(2) th{
-      top:34px;
-      background:var(--header2);
-      font-size:11px;
-      color:#344054;
-    }
-
-    thead tr:first-child th:first-child{
-      left:0;
-      z-index:7;
-      text-align:left;
-    }
-
-    thead tr:nth-child(2) th:first-child{
-      left:0;
-      z-index:7;
-      text-align:left;
-    }
-
-    tbody tr.rubro-row td{
-      font-weight:800;
-      background:#fff;
-    }
-
-    tbody tr.rubro-row td:first-child{
-      background:#fff;
-    }
-
-    tbody tr.partida-row td{
-      background:var(--child);
-      color:#475467;
-    }
-
-    tbody tr.partida-row td:first-child{
-      background:var(--child);
-      padding-left:32px;
-    }
-
-    tbody tr:hover td{
-      filter:brightness(.985);
-    }
-
-    .toggle{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:20px;
-      height:20px;
-      margin-right:6px;
-      border:1px solid #cbd5e1;
-      border-radius:5px;
-      background:#fff;
-      color:#334155;
-      cursor:pointer;
-      font-weight:900;
-      line-height:1;
-      user-select:none;
-    }
-
-    .rubroname{
-      cursor:pointer;
-    }
-
-    .num-over{
-      color:var(--over);
-      background:var(--over-bg)!important;
-      font-weight:800;
-    }
-
-    .num-save{
-      color:var(--save);
-      background:var(--save-bg)!important;
-      font-weight:800;
-    }
-
-    .num-neutral{
-      color:var(--neutral);
-      background:var(--neutral-bg)!important;
-      font-weight:700;
-    }
-
-    .no-budget{
-      color:var(--over);
-      background:#fff1f2!important;
-      font-weight:800;
-    }
-
-    .future{
-      color:#98a2b3;
-      background:#fcfcfd!important;
-      font-style:italic;
-    }
-
-    .total-col{
-      border-left:2px solid #cbd5e1!important;
-    }
-
-    .summary table{
-      min-width:700px;
-    }
-
-    .summary thead tr:first-child th{
-      background:var(--header);
-    }
-
-    .summary td:first-child{
-      min-width:220px;
-    }
-
-
-    .summary-total-float{
-      position:sticky;
-      top:0;
-      z-index:8;
-      display:grid;
-      grid-template-columns:minmax(220px,1fr) repeat(4,minmax(130px,1fr));
-      background:#dfe8ef;
-      border-bottom:1px solid #c9d6df;
-      font-weight:900;
-      font-size:12px;
-    }
-    .summary-total-float div{
-      padding:9px 10px;
-      border-right:1px solid #c9d6df;
-      text-align:right;
-      white-space:nowrap;
-    }
-    .summary-total-float div:first-child{text-align:left}
-
-    .error{
-      display:none;
-      margin-bottom:16px;
-      background:#fff1f2;
-      color:#881337;
-      border:1px solid #fecdd3;
-      border-radius:10px;
-      padding:12px 14px;
-      font-size:13px;
-    }
-
-    @media(max-width:900px){
-      .topbar{align-items:flex-start;flex-direction:column}
-      .status{text-align:left}
-      .controls{align-items:flex-start;flex-direction:column}
-      .cut{margin-left:0}
-      .wrap{padding:12px}
-    }
-  </style>
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:_dlc_DocId msdt:dt="string">UT5DNZMK4W5E-800651695-1167904</mso:_dlc_DocId>
+<mso:_dlc_DocIdItemGuid msdt:dt="string">fd5deb96-23fd-4912-827e-e58320caad68</mso:_dlc_DocIdItemGuid>
+<mso:_dlc_DocIdUrl msdt:dt="string">https://agsantaazulperu.sharepoint.com/sites/FS-ASA/_layouts/15/DocIdRedir.aspx?ID=UT5DNZMK4W5E-800651695-1167904, UT5DNZMK4W5E-800651695-1167904</mso:_dlc_DocIdUrl>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
 </head>
-
 <body>
 <div class="wrap">
+<div class="top">
+<div><div class="brand">ASA</div><h1>CONTROL PRESUPUESTAL</h1><div class="subtitle">Arándano · Presupuesto vs Ejecutado</div></div>
+<div><div class="toolbar">
+<div class="control"><label>AÑO</label><select id="fAnio"></select></div>
+<div class="control"><label>PERIODO</label><select id="fPeriodo"></select></div>
+<div class="toggle-box"><label>INCLUIR INVERSIONES</label><div class="toggle-row"><div id="switchInv" class="switch on"></div><strong id="switchLabel">Sí</strong></div></div>
+</div><div id="estado" class="status">Cargando información...</div></div>
+</div>
+<div id="error" class="error"></div>
 
-  <div class="topbar">
-    <div>
-      <h1>Control Presupuestal ASA</h1>
-      <div class="subtitle">Presupuesto vs Ejecutado · Rubro → Partida</div>
-    </div>
-    <div id="estado" class="status">Cargando información...</div>
-  </div>
+<div class="cards">
+<div class="card kpi"><div class="kpi-title">Presupuesto acumulado</div><div class="kpi-value" id="kPpto">0</div></div>
+<div class="card kpi"><div class="kpi-title">Ejecutado acumulado</div><div class="kpi-value" id="kEjec">0</div></div>
+<div class="card kpi"><div class="kpi-title">Diferencia</div><div class="kpi-value" id="kDif">0</div><div class="kpi-sub" id="kDifLabel">Sin variación</div></div>
+<div class="card kpi"><div class="kpi-title">% Desviación</div><div class="kpi-value" id="kDev">0%</div></div>
+</div>
 
-  <div id="error" class="error"></div>
+<div class="visual-grid">
+<div class="card visual-card"><div class="visual-title">EJECUCIÓN MENSUAL</div><div class="chart-wrap"><canvas id="chartMensual"></canvas></div></div>
+<div class="card visual-card"><div class="visual-title">TOP 5 AHORROS</div><div id="topAhorros" class="rank-list"></div></div>
+<div class="card visual-card"><div class="visual-title">TOP 5 EXCESOS</div><div id="topExcesos" class="rank-list"></div></div>
+</div>
 
-  <div class="controls">
-    <div>
-      <label>AÑO</label>
-      <select id="fAnio"></select>
-    </div>
-    <div id="corte" class="cut">Corte: —</div>
-  </div>
-
-  <!-- NIVEL 1 -->
-  <section class="card summary">
-    <div class="card-head">
-      <div>
-        <h2>1. Resumen acumulado por Rubro</h2>
-        <p>Comparación acumulada hasta el último mes con ejecución.</p>
-      </div>
-      <div class="legend">
-        <span class="lg-over">Exceso</span>
-        <span class="lg-save">Ahorro</span>
-        <span class="lg-neutral">Sin variación</span>
-      </div>
-    </div>
-
-    <div id="resumenTotalFloat" class="summary-total-float"></div>
-    <div class="table-wrap">
-      <table id="tablaResumen">
-        <thead>
-          <tr>
-            <th>RUBRO</th>
-            <th>PRESUPUESTO</th>
-            <th>EJECUTADO</th>
-            <th>DIFERENCIA</th>
-            <th>% DESVIACIÓN</th>
-          </tr>
-        </thead>
-        <tbody id="resumenBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- NIVEL 2 Y 3 -->
-  <section class="card">
-    <div class="card-head">
-      <div>
-        <h2>2. Comparativo mensual</h2>
-        <p>Meses en horizontal. Usa + para desplegar las Partidas de cada Rubro.</p>
-      </div>
-      <div class="legend">
-        <span class="lg-over">Exceso</span>
-        <span class="lg-save">Ahorro</span>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table id="tablaMensual">
-        <thead id="mensualHead"></thead>
-        <tbody id="mensualBody"></tbody>
-      </table>
-    </div>
-  </section>
-
+<div class="card table-card">
+<div class="table-head"><div class="tabs"><div class="tab active">Resumen por Rubro</div><div class="tab">Detalle por Partida</div><div class="tab">Comparativo Mensual</div></div></div>
+<div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table><div id="floatingTotal" class="floating-total"></div></div>
+</div>
 </div>
 
 <script>
-const ID_EJECUTADO = "1cDUw11iIDVa8efxUzg9qi1kZXHZtuqwv";
-const HOJA_EJECUTADO = "EJECUTADO";
-
-const ID_PRESUPUESTO = "1kX2tarsvVvwupo9D5RvDcYxEFUoIoMzp";
-const HOJA_PRESUPUESTO = "PRESUPUESTO";
-
-const MESES = [
-  {n:1,c:"ENE",l:"Enero"},
-  {n:2,c:"FEB",l:"Febrero"},
-  {n:3,c:"MAR",l:"Marzo"},
-  {n:4,c:"ABR",l:"Abril"},
-  {n:5,c:"MAY",l:"Mayo"},
-  {n:6,c:"JUN",l:"Junio"},
-  {n:7,c:"JUL",l:"Julio"},
-  {n:8,c:"AGO",l:"Agosto"},
-  {n:9,c:"SEP",l:"Septiembre"},
-  {n:10,c:"OCT",l:"Octubre"},
-  {n:11,c:"NOV",l:"Noviembre"},
-  {n:12,c:"DIC",l:"Diciembre"}
-];
-
-let EJECUTADO = [];
-let PRESUPUESTO = [];
-let rubrosAbiertos = new Set();
-
-function txt(v){
-  return String(v ?? "")
-    .replace(/\u00A0/g," ")
-    .replace(/\s+/g," ")
-    .trim();
-}
-
-function numero(v){
-  if(v === null || v === undefined || v === "") return 0;
-  let s = String(v).trim().replace(/\s/g,"");
-  if(s.includes(",") && s.includes(".")) s=s.replace(/,/g,"");
-  else if(s.includes(",") && !s.includes(".")) s=s.replace(",",".");
-  const n = Number(s);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function normalizar(row){
-  const x={};
-  Object.keys(row).forEach(k=>{
-    const key=txt(k).replace(/^\uFEFF/,"").toUpperCase();
-    x[key]=row[k];
-  });
-
-  return {
-    PERIODO:txt(x.PERIODO),
-    RUBRO:txt(x.RUBRO),
-    PARTIDA:txt(x.PARTIDA),
-    IMPORTE:numero(x.IMPORTE)
-  };
-}
-
-function cargarGoogleSheet(spreadsheetId, sheetName){
-  return new Promise((resolve,reject)=>{
-    const callbackName = "gviz_" + Math.random().toString(36).slice(2);
-
-    const limpiar = ()=>{
-      try{ delete window[callbackName]; }catch(e){}
-      if(script && script.parentNode) script.parentNode.removeChild(script);
-    };
-
-    window[callbackName] = function(resp){
-      try{
-        if(!resp || resp.status === "error"){
-          const msg = resp && resp.errors && resp.errors.length
-            ? resp.errors.map(e=>e.detailed_message || e.message).join(" | ")
-            : "Google Sheets devolvió un error.";
-          throw new Error(msg);
-        }
-
-        const table = resp.table;
-        const headers = table.cols.map((c,i)=> txt(c.label || c.id || ("COL"+i)));
-
-        const filas = table.rows.map(r=>{
-          const obj = {};
-          headers.forEach((h,i)=>{
-            const celda = r.c ? r.c[i] : null;
-            obj[h] = celda ? (celda.v ?? celda.f ?? "") : "";
-          });
-          return normalizar(obj);
-        }).filter(x=>x.PERIODO && x.RUBRO);
-
-        if(!filas.length){
-          throw new Error("La hoja se leyó, pero no se encontraron filas con PERIODO y RUBRO.");
-        }
-
-        limpiar();
-        resolve(filas);
-      }catch(err){
-        limpiar();
-        reject(err);
-      }
-    };
-
-    const script = document.createElement("script");
-    const params = new URLSearchParams({
-      sheet: sheetName,
-      tqx: "out:json;responseHandler:" + callbackName,
-      tq: "select *"
-    });
-
-    script.src =
-      "https://docs.google.com/spreadsheets/d/" +
-      spreadsheetId +
-      "/gviz/tq?" +
-      params.toString();
-
-    script.onerror = ()=>{
-      limpiar();
-      reject(new Error("No se pudo cargar la hoja " + sheetName + " desde Google Sheets."));
-    };
-
-    document.head.appendChild(script);
-  });
-}
-function money(v){
-  return Math.round(Number(v||0)).toLocaleString("es-PE",{
-    minimumFractionDigits:0,
-    maximumFractionDigits:0
-  });
-}
-
-function porcentaje(dif,pres){
-  if(pres===0) return null;
-  return (dif/pres)*100;
-}
-
-function pct(v){
-  if(v===null) return "—";
-  return Math.round(Number(v)).toLocaleString("es-PE",{
-    minimumFractionDigits:0,
-    maximumFractionDigits:0
-  })+"%";
-}
-
-function claseVariacion(dif,pres,hayEjecucion=true){
-  if(!hayEjecucion) return "future";
-  if(pres===0 && dif>0) return "no-budget";
-  if(dif>0) return "num-over";
-  if(dif<0) return "num-save";
-  return "num-neutral";
-}
-
-function anioPeriodo(p){ return p.slice(0,4); }
-function mesPeriodo(p){ return Number(p.slice(4,6)); }
-
-function mesesConEjecucion(anio){
-  let maxMes = 0;
-
-  for(const x of EJECUTADO){
-    if(anioPeriodo(x.PERIODO)!==anio) continue;
-
-    const m = mesPeriodo(x.PERIODO);
-
-    if(m>=1 && m<=12 && m>maxMes){
-      maxMes = m;
-    }
-  }
-
-  return maxMes || 12;
-}
-
-function suma(base,anio,rubro=null,partida=null,mesMax=12,mesExact=null){
-  return base.reduce((acc,x)=>{
-    if(anioPeriodo(x.PERIODO)!==anio) return acc;
-    const m=mesPeriodo(x.PERIODO);
-    if(m<1 || m>12) return acc;
-    if(mesExact!==null && m!==mesExact) return acc;
-    if(mesExact===null && m>mesMax) return acc;
-    if(rubro!==null && x.RUBRO!==rubro) return acc;
-    if(partida!==null && x.PARTIDA!==partida) return acc;
-    return acc+x.IMPORTE;
-  },0);
-}
-
-function existeMes(base,anio,rubro,partida,mes){
-  return base.some(x=>{
-    if(anioPeriodo(x.PERIODO)!==anio) return false;
-    if(mesPeriodo(x.PERIODO)!==mes) return false;
-    if(rubro!==null && x.RUBRO!==rubro) return false;
-    if(partida!==null && x.PARTIDA!==partida) return false;
-    return true;
-  });
-}
-
-function listaRubros(anio){
-  return [...new Set(
-    [...PRESUPUESTO,...EJECUTADO]
-      .filter(x=>anioPeriodo(x.PERIODO)===anio)
-      .map(x=>x.RUBRO)
-  )].sort((a,b)=>a.localeCompare(b,"es"));
-}
-
-function listaPartidas(anio,rubro){
-  return [...new Set(
-    [...PRESUPUESTO,...EJECUTADO]
-      .filter(x=>anioPeriodo(x.PERIODO)===anio && x.RUBRO===rubro)
-      .map(x=>x.PARTIDA || "(SIN PARTIDA)")
-  )].sort((a,b)=>a.localeCompare(b,"es"));
-}
-
-function construirResumen(anio,mesCorte){
-  const rubros=listaRubros(anio);
-
-  let filas=rubros.map(rubro=>{
-    const p=suma(PRESUPUESTO,anio,rubro,null,mesCorte);
-    const e=suma(EJECUTADO,anio,rubro,null,mesCorte);
-    const d=e-p;
-    const dev=porcentaje(d,p);
-    const cls=claseVariacion(d,p,true);
-
-    return `
-      <tr>
-        <td><strong>${rubro}</strong></td>
-        <td>${money(p)}</td>
-        <td>${money(e)}</td>
-        <td class="${cls}">${money(d)}</td>
-        <td class="${cls}">${pct(dev)}</td>
-      </tr>`;
-  }).join("");
-
-  const tp=suma(PRESUPUESTO,anio,null,null,mesCorte);
-  const te=suma(EJECUTADO,anio,null,null,mesCorte);
-  const td=te-tp;
-  const tdev=porcentaje(td,tp);
-  const tcls=claseVariacion(td,tp,true);
-
-  filas += `
-    <tr style="font-weight:900;background:#eaf0f5">
-      <td><strong>TOTAL GENERAL</strong></td>
-      <td><strong>${money(tp)}</strong></td>
-      <td><strong>${money(te)}</strong></td>
-      <td class="${tcls}"><strong>${money(td)}</strong></td>
-      <td class="${tcls}"><strong>${pct(tdev)}</strong></td>
-    </tr>`;
-
-  resumenBody.innerHTML=filas;
-
-  resumenTotalFloat.innerHTML=`
-    <div>TOTAL GENERAL</div>
-    <div>${money(tp)}</div>
-    <div>${money(te)}</div>
-    <div class="${tcls}">${money(td)}</div>
-    <div class="${tcls}">${pct(tdev)}</div>`;
-}
-
-function construirCabecera(mesCorte){
-  let fila1=`<tr><th rowspan="2">RUBRO / PARTIDA</th>`;
-  let fila2=`<tr>`;
-
-  MESES.forEach(m=>{
-    const futuro=m.n>mesCorte;
-    fila1 += `<th colspan="4" class="${futuro?'future':''}">${m.c}</th>`;
-    fila2 += `
-      <th class="${futuro?'future':''}">Ppto.</th>
-      <th class="${futuro?'future':''}">Ejec.</th>
-      <th class="${futuro?'future':''}">Dif.</th>
-      <th class="${futuro?'future':''}">%</th>`;
-  });
-
-  fila1+=`<th colspan="4" class="total-col">TOTAL ACUM.</th></tr>`;
-  fila2+=`
-    <th class="total-col">Ppto.</th>
-    <th>Ejec.</th>
-    <th>Dif.</th>
-    <th>%</th>
-  </tr>`;
-
-  mensualHead.innerHTML=fila1+fila2;
-}
-
-function celdasMes(anio,rubro,partida,mes,mesCorte){
-  const futuro=mes>mesCorte;
-
-  const p=suma(PRESUPUESTO,anio,rubro,partida,12,mes);
-  const e=suma(EJECUTADO,anio,rubro,partida,12,mes);
-
-  if(futuro){
-    return `
-      <td class="future">${money(p)}</td>
-      <td class="future">—</td>
-      <td class="future">—</td>
-      <td class="future">—</td>`;
-  }
-
-  const hayE=existeMes(EJECUTADO,anio,rubro,partida,mes);
-
-  if(!hayE && e===0){
-    return `
-      <td>${money(p)}</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>`;
-  }
-
-  const d=e-p;
-  const dev=porcentaje(d,p);
-  const cls=claseVariacion(d,p,true);
-
-  return `
-    <td>${money(p)}</td>
-    <td>${money(e)}</td>
-    <td class="${cls}">${money(d)}</td>
-    <td class="${cls}">${p===0 && e!==0 ? "SIN PPTO." : pct(dev)}</td>`;
-}
-
-function celdasTotal(anio,rubro,partida,mesCorte){
-  const p=suma(PRESUPUESTO,anio,rubro,partida,mesCorte);
-  const e=suma(EJECUTADO,anio,rubro,partida,mesCorte);
-  const d=e-p;
-  const dev=porcentaje(d,p);
-  const cls=claseVariacion(d,p,true);
-
-  return `
-    <td class="total-col">${money(p)}</td>
-    <td>${money(e)}</td>
-    <td class="${cls}">${money(d)}</td>
-    <td class="${cls}">${p===0 && e!==0 ? "SIN PPTO." : pct(dev)}</td>`;
-}
-
-function construirMensual(anio,mesCorte){
-  construirCabecera(mesCorte);
-  const rubros=listaRubros(anio);
-  let html="";
-
-  rubros.forEach(rubro=>{
-    const abierto=rubrosAbiertos.has(rubro);
-
-    html+=`<tr class="rubro-row">
-      <td>
-        <span class="toggle" data-rubro="${encodeURIComponent(rubro)}">${abierto?"−":"+"}</span>
-        <span class="rubroname" data-rubro="${encodeURIComponent(rubro)}">${rubro}</span>
-      </td>`;
-
-    MESES.forEach(m=>{
-      html+=celdasMes(anio,rubro,null,m.n,mesCorte);
-    });
-
-    html+=celdasTotal(anio,rubro,null,mesCorte);
-    html+=`</tr>`;
-
-    if(abierto){
-      listaPartidas(anio,rubro).forEach(partida=>{
-        const partidaReal=partida==="(SIN PARTIDA)" ? "" : partida;
-        html+=`<tr class="partida-row">
-          <td>↳ ${partida}</td>`;
-
-        MESES.forEach(m=>{
-          html+=celdasMes(anio,rubro,partidaReal,m.n,mesCorte);
-        });
-
-        html+=celdasTotal(anio,rubro,partidaReal,mesCorte);
-        html+=`</tr>`;
-      });
-    }
-  });
-
-  // TOTAL GENERAL mensual
-  html+=`<tr class="rubro-row" style="font-weight:900;background:#eaf0f5">
-    <td><strong>TOTAL GENERAL</strong></td>`;
-  MESES.forEach(m=>{
-    html+=celdasMes(anio,null,null,m.n,mesCorte);
-  });
-  html+=celdasTotal(anio,null,null,mesCorte);
-  html+=`</tr>`;
-
-  mensualBody.innerHTML=html;
-
-  document.querySelectorAll(".toggle,.rubroname").forEach(el=>{
-    el.addEventListener("click",()=>{
-      const rubro=decodeURIComponent(el.dataset.rubro);
-      if(rubrosAbiertos.has(rubro)) rubrosAbiertos.delete(rubro);
-      else rubrosAbiertos.add(rubro);
-      construirMensual(fAnio.value,mesesConEjecucion(fAnio.value));
-    });
-  });
-}
-
-function render(){
-  const anio=fAnio.value;
-  const mesCorte=mesesConEjecucion(anio);
-  corte.textContent=`Corte: ${MESES[mesCorte-1].l} ${anio}`;
-
-  construirResumen(anio,mesCorte);
-  construirMensual(anio,mesCorte);
-}
-
-async function iniciar(){
-  try{
-    [EJECUTADO,PRESUPUESTO]=await Promise.all([
-      cargarGoogleSheet(ID_EJECUTADO, HOJA_EJECUTADO),
-      cargarGoogleSheet(ID_PRESUPUESTO, HOJA_PRESUPUESTO)
-    ]);
-
-    const setAnios = new Set();
-
-    for(const x of EJECUTADO){
-      const a = anioPeriodo(x.PERIODO);
-      if(a) setAnios.add(a);
-    }
-
-    for(const x of PRESUPUESTO){
-      const a = anioPeriodo(x.PERIODO);
-      if(a) setAnios.add(a);
-    }
-
-    const anios = Array.from(setAnios).sort();
-
-    fAnio.innerHTML=anios.map(a=>`<option value="${a}">${a}</option>`).join("");
-    if(anios.length) fAnio.value=anios[anios.length-1];
-
-    fAnio.addEventListener("change",()=>{
-      rubrosAbiertos.clear();
-      render();
-    });
-
-    estado.textContent=
-      `Conectado · Ejecutado: ${EJECUTADO.length.toLocaleString("es-PE")} filas · Presupuesto: ${PRESUPUESTO.length.toLocaleString("es-PE")} filas`;
-
-    render();
-
-  }catch(err){
-    console.error(err);
-    estado.textContent="Error de conexión";
-    error.style.display="block";
-    error.textContent="No se pudieron leer las hojas de Google Sheets. Detalle: " + (err.message || err);
-  }
-}
-
+const ID_EJECUTADO="1cDUw11iIDVa8efxUzg9qi1kZXHZtuqwv", HOJA_EJECUTADO="EJECUTADO";
+const ID_PRESUPUESTO="1kX2tarsvVvwupo9D5RvDcYxEFUoIoMzp", HOJA_PRESUPUESTO="PRESUPUESTO";
+const MESES=[["ENE",1],["FEB",2],["MAR",3],["ABR",4],["MAY",5],["JUN",6],["JUL",7],["AGO",8],["SEP",9],["OCT",10],["NOV",11],["DIC",12]];
+let EJECUTADO=[],PRESUPUESTO=[],incluirInversiones=true,rubrosAbiertos=new Set(),chart=null;
+
+function txt(v){return String(v??"").replace(/\u00A0/g," ").replace(/\s+/g," ").trim()}
+function numero(v){if(v===null||v===undefined||v==="")return 0;let s=String(v).trim().replace(/\s/g,"");if(s.includes(",")&&s.includes("."))s=s.replace(/,/g,"");else if(s.includes(",")&&!s.includes("."))s=s.replace(",",".");const n=Number(s);return Number.isFinite(n)?n:0}
+function normalizar(row){const o={};Object.keys(row).forEach(k=>o[txt(k).replace(/^\uFEFF/,"").toUpperCase()]=row[k]);return{PERIODO:txt(o.PERIODO),RUBRO:txt(o.RUBRO),PARTIDA:txt(o.PARTIDA),IMPORTE:numero(o.IMPORTE)}}
+function cargarGoogleSheet(id,sheet){return new Promise((resolve,reject)=>{const cb="gviz_"+Math.random().toString(36).slice(2);let script;const clean=()=>{try{delete window[cb]}catch(e){}if(script&&script.parentNode)script.parentNode.removeChild(script)};window[cb]=resp=>{try{if(!resp||resp.status==="error")throw new Error(resp?.errors?.map(e=>e.detailed_message||e.message).join(" | ")||"Google Sheets devolvió un error.");const headers=resp.table.cols.map((c,i)=>txt(c.label||c.id||("COL"+i)));const filas=resp.table.rows.map(r=>{const obj={};headers.forEach((h,i)=>{const c=r.c?r.c[i]:null;obj[h]=c?(c.v??c.f??""):""});return normalizar(obj)}).filter(x=>x.PERIODO&&x.RUBRO);clean();resolve(filas)}catch(err){clean();reject(err)}};script=document.createElement("script");const q=new URLSearchParams({sheet,tqx:"out:json;responseHandler:"+cb,tq:"select *"});script.src="https://docs.google.com/spreadsheets/d/"+id+"/gviz/tq?"+q;script.onerror=()=>{clean();reject(new Error("No se pudo cargar "+sheet))};document.head.appendChild(script)})}
+function anioP(p){return p.slice(0,4)}function mesP(p){return Number(p.slice(4,6))}
+function esInv(r){r=txt(r).toUpperCase();return r.startsWith("R51 ")||r==="R51"||r.includes("INVERSION")}
+function suma(base,anio,mesCorte,rubro=null,partida=null,mesExact=null){return base.reduce((a,x)=>{if(anioP(x.PERIODO)!==anio)return a;const m=mesP(x.PERIODO);if(m<1||m>mesCorte)return a;if(mesExact!==null&&m!==mesExact)return a;if(!incluirInversiones&&esInv(x.RUBRO))return a;if(rubro!==null&&x.RUBRO!==rubro)return a;if(partida!==null&&x.PARTIDA!==partida)return a;return a+x.IMPORTE},0)}
+function existeEjec(anio,r,p,m){return EJECUTADO.some(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)===m&&(incluirInversiones||!esInv(x.RUBRO))&&(r===null||x.RUBRO===r)&&(p===null||x.PARTIDA===p))}
+function listaRubros(anio,mesCorte){return [...new Set([...PRESUPUESTO,...EJECUTADO].filter(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)<=mesCorte&&(incluirInversiones||!esInv(x.RUBRO))).map(x=>x.RUBRO))].sort((a,b)=>a.localeCompare(b,"es"))}
+function listaPartidas(anio,mesCorte,r){return [...new Set([...PRESUPUESTO,...EJECUTADO].filter(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)<=mesCorte&&x.RUBRO===r).map(x=>x.PARTIDA||"(SIN PARTIDA)"))].sort((a,b)=>a.localeCompare(b,"es"))}
+function money(v){return Math.round(Number(v||0)).toLocaleString("es-PE")}function dev(d,p){return p===0?null:d/p*100}function pct(v){return v===null?"—":Math.round(v).toLocaleString("es-PE")+"%"}function cls(d){return d>0?"diff-red":d<0?"diff-blue":"diff-neutral"}
+
+function renderKpis(a,m){const p=suma(PRESUPUESTO,a,m),e=suma(EJECUTADO,a,m),d=e-p,v=dev(d,p);kPpto.textContent=money(p);kEjec.textContent=money(e);kDif.textContent=money(d);kDev.textContent=pct(v);kDif.className="kpi-value "+cls(d);kDev.className="kpi-value "+cls(d);kDifLabel.textContent=d>0?"Exceso":d<0?"Ahorro":"Sin variación";kDifLabel.className="kpi-sub "+(d>0?"red":d<0?"blue":"muted")}
+function renderChart(a,m){const labels=MESES.map(x=>x[0]);const p=MESES.map(x=>x[1]<=m?suma(PRESUPUESTO,a,m,null,null,x[1]):0),e=MESES.map(x=>x[1]<=m?suma(EJECUTADO,a,m,null,null,x[1]):0);if(chart)chart.destroy();chart=new Chart(chartMensual,{type:"bar",data:{labels,datasets:[{label:"Presupuesto",data:p,backgroundColor:"#c8d5e3"},{label:"Ejecutado",data:e,backgroundColor:"#123e5d"}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>c.dataset.label+": "+money(c.raw)}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>Number(v).toLocaleString("es-PE",{notation:"compact",maximumFractionDigits:0})}}}}})}
+function renderRank(a,m){const data=listaRubros(a,m).map(r=>{const p=suma(PRESUPUESTO,a,m,r),e=suma(EJECUTADO,a,m,r);return{r,d:e-p}});const save=data.filter(x=>x.d<0).sort((a,b)=>a.d-b.d).slice(0,5),over=data.filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,5);function paint(el,arr,t){const mx=Math.max(...arr.map(x=>Math.abs(x.d)),1);el.innerHTML=arr.map(x=>`<div class="rank-row"><div class="rank-name">${x.r}</div><div class="rank-val ${cls(x.d)}">${money(x.d)}</div><div class="rank-bar"><div class="rank-fill ${t}" style="width:${Math.max(5,Math.abs(x.d)/mx*100)}%"></div></div></div>`).join("")}paint(topAhorros,save,"save");paint(topExcesos,over,"over")}
+function head(){let a='<tr><th rowspan="2">RUBRO / PARTIDA</th>',b='<tr>';MESES.forEach(x=>{a+=`<th colspan="4">${x[0]}</th>`;b+='<th>Ppto.</th><th>Ejec.</th><th>Dif.</th><th>%</th>'});a+='<th colspan="4">TOTAL ACUM.</th></tr>';b+='<th>Ppto.</th><th>Ejec.</th><th>Dif.</th><th>%</th></tr>';thead.innerHTML=a+b}
+function cellsMes(a,m,r,p,me){const pp=suma(PRESUPUESTO,a,m,r,p,me),ee=suma(EJECUTADO,a,m,r,p,me);if(me>m||!existeEjec(a,r,p,me))return `<td>${money(pp)}</td><td>—</td><td>—</td><td>—</td>`;const d=ee-pp,v=dev(d,pp);return `<td>${money(pp)}</td><td>${money(ee)}</td><td class="${cls(d)}">${money(d)}</td><td class="${cls(d)}">${pp===0&&ee!==0?"SIN PPTO.":pct(v)}</td>`}
+function cellsTot(a,m,r,p){const pp=suma(PRESUPUESTO,a,m,r,p),ee=suma(EJECUTADO,a,m,r,p),d=ee-pp,v=dev(d,pp);return `<td>${money(pp)}</td><td>${money(ee)}</td><td class="${cls(d)}">${money(d)}</td><td class="${cls(d)}">${pp===0&&ee!==0?"SIN PPTO.":pct(v)}</td>`}
+function renderTable(a,m){head();let h="";listaRubros(a,m).forEach(r=>{const o=rubrosAbiertos.has(r);h+=`<tr class="rubro"><td><span class="toggle" data-r="${encodeURIComponent(r)}">${o?"−":"+"}</span>${r}</td>`;MESES.forEach(x=>h+=cellsMes(a,m,r,null,x[1]));h+=cellsTot(a,m,r,null)+"</tr>";if(o)listaPartidas(a,m,r).forEach(p=>{const real=p==="(SIN PARTIDA)"?"":p;h+=`<tr class="partida"><td>↳ ${p}</td>`;MESES.forEach(x=>h+=cellsMes(a,m,r,real,x[1]));h+=cellsTot(a,m,r,real)+"</tr>"})});const tp=suma(PRESUPUESTO,a,m),te=suma(EJECUTADO,a,m),td=te-tp,tv=dev(td,tp);h+='<tr class="total"><td>TOTAL GENERAL</td>';MESES.forEach(x=>h+=cellsMes(a,m,null,null,x[1]));h+=cellsTot(a,m,null,null)+"</tr>";tbody.innerHTML=h;floatingTotal.innerHTML=`<div>TOTAL GENERAL</div><div>${money(tp)}</div><div>${money(te)}</div><div class="${cls(td)}">${money(td)}</div><div class="${cls(td)}">${pct(tv)}</div>`;document.querySelectorAll(".toggle").forEach(el=>el.onclick=()=>{const r=decodeURIComponent(el.dataset.r);rubrosAbiertos.has(r)?rubrosAbiertos.delete(r):rubrosAbiertos.add(r);renderTable(fAnio.value,Number(fPeriodo.value))})}
+function render(){const a=fAnio.value,m=Number(fPeriodo.value);renderKpis(a,m);renderChart(a,m);renderRank(a,m);renderTable(a,m)}
+async function iniciar(){try{[EJECUTADO,PRESUPUESTO]=await Promise.all([cargarGoogleSheet(ID_EJECUTADO,HOJA_EJECUTADO),cargarGoogleSheet(ID_PRESUPUESTO,HOJA_PRESUPUESTO)]);const years=[...new Set([...EJECUTADO,...PRESUPUESTO].map(x=>anioP(x.PERIODO)).filter(Boolean))].sort();fAnio.innerHTML=years.map(a=>`<option>${a}</option>`).join("");fAnio.value=years.at(-1);fPeriodo.innerHTML=MESES.map(x=>`<option value="${x[1]}">Ene – ${x[0][0]+x[0].slice(1).toLowerCase()}</option>`).join("");const maxm=Math.max(...EJECUTADO.filter(x=>anioP(x.PERIODO)===fAnio.value).map(x=>mesP(x.PERIODO)).filter(x=>x>=1&&x<=12));fPeriodo.value=maxm||12;fAnio.onchange=()=>{rubrosAbiertos.clear();render()};fPeriodo.onchange=render;switchInv.onclick=()=>{incluirInversiones=!incluirInversiones;switchInv.classList.toggle("on",incluirInversiones);switchLabel.textContent=incluirInversiones?"Sí":"No";rubrosAbiertos.clear();render()};estado.textContent=`Conectado · Ejecutado: ${EJECUTADO.length.toLocaleString("es-PE")} filas · Presupuesto: ${PRESUPUESTO.length.toLocaleString("es-PE")} filas`;render()}catch(err){console.error(err);estado.textContent="Error de conexión";error.style.display="block";error.textContent="No se pudieron leer las hojas de Google Sheets. Detalle: "+(err.message||err)}}
 iniciar();
 </script>
 </body>
