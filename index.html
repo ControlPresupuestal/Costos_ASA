@@ -520,11 +520,19 @@ function anioPeriodo(p){ return p.slice(0,4); }
 function mesPeriodo(p){ return Number(p.slice(4,6)); }
 
 function mesesConEjecucion(anio){
-  const m=EJECUTADO
-    .filter(x=>anioPeriodo(x.PERIODO)===anio)
-    .map(x=>mesPeriodo(x.PERIODO))
-    .filter(x=>x>=1 && x<=12);
-  return m.length ? Math.max(...m) : 12;
+  let maxMes = 0;
+
+  for(const x of EJECUTADO){
+    if(anioPeriodo(x.PERIODO)!==anio) continue;
+
+    const m = mesPeriodo(x.PERIODO);
+
+    if(m>=1 && m<=12 && m>maxMes){
+      maxMes = m;
+    }
+  }
+
+  return maxMes || 12;
 }
 
 function suma(base,anio,rubro=null,partida=null,mesMax=12,mesExact=null){
@@ -743,11 +751,19 @@ async function iniciar(){
       cargarCSV(URL_PRESUPUESTO)
     ]);
 
-    const anios=[...new Set(
-      [...EJECUTADO,...PRESUPUESTO]
-        .map(x=>anioPeriodo(x.PERIODO))
-        .filter(Boolean)
-    )].sort();
+    const setAnios = new Set();
+
+    for(const x of EJECUTADO){
+      const a = anioPeriodo(x.PERIODO);
+      if(a) setAnios.add(a);
+    }
+
+    for(const x of PRESUPUESTO){
+      const a = anioPeriodo(x.PERIODO);
+      if(a) setAnios.add(a);
+    }
+
+    const anios = Array.from(setAnios).sort();
 
     fAnio.innerHTML=anios.map(a=>`<option value="${a}">${a}</option>`).join("");
     if(anios.length) fAnio.value=anios[anios.length-1];
