@@ -62,7 +62,7 @@
 
     .status{
       color:var(--muted);
-      font-size:12px;
+      font-size:11px;
       text-align:right;
     }
 
@@ -165,7 +165,7 @@
     }
 
     th,td{
-      padding:9px 10px;
+      padding:7px 8px;
       border-right:1px solid #eef1f4;
       border-bottom:1px solid #eef1f4;
       text-align:right;
@@ -302,8 +302,28 @@
     }
 
     .summary td:first-child{
-      min-width:270px;
+      min-width:220px;
     }
+
+
+    .summary-total-float{
+      position:sticky;
+      top:0;
+      z-index:8;
+      display:grid;
+      grid-template-columns:minmax(220px,1fr) repeat(4,minmax(130px,1fr));
+      background:#dfe8ef;
+      border-bottom:1px solid #c9d6df;
+      font-weight:900;
+      font-size:12px;
+    }
+    .summary-total-float div{
+      padding:9px 10px;
+      border-right:1px solid #c9d6df;
+      text-align:right;
+      white-space:nowrap;
+    }
+    .summary-total-float div:first-child{text-align:left}
 
     .error{
       display:none;
@@ -355,12 +375,13 @@
         <p>Comparación acumulada hasta el último mes con ejecución.</p>
       </div>
       <div class="legend">
-        <span class="lg-over">Sobre presupuesto</span>
+        <span class="lg-over">Exceso</span>
         <span class="lg-save">Ahorro</span>
         <span class="lg-neutral">Sin variación</span>
       </div>
     </div>
 
+    <div id="resumenTotalFloat" class="summary-total-float"></div>
     <div class="table-wrap">
       <table id="tablaResumen">
         <thead>
@@ -385,8 +406,8 @@
         <p>Meses en horizontal. Usa + para desplegar las Partidas de cada Rubro.</p>
       </div>
       <div class="legend">
-        <span class="lg-over">Rojo oscuro = se pasó</span>
-        <span class="lg-save">Azul = ahorro</span>
+        <span class="lg-over">Exceso</span>
+        <span class="lg-save">Ahorro</span>
       </div>
     </div>
 
@@ -521,9 +542,9 @@ function cargarGoogleSheet(spreadsheetId, sheetName){
   });
 }
 function money(v){
-  return Number(v||0).toLocaleString("es-PE",{
-    minimumFractionDigits:2,
-    maximumFractionDigits:2
+  return Math.round(Number(v||0)).toLocaleString("es-PE",{
+    minimumFractionDigits:0,
+    maximumFractionDigits:0
   });
 }
 
@@ -534,9 +555,9 @@ function porcentaje(dif,pres){
 
 function pct(v){
   if(v===null) return "—";
-  return Number(v).toLocaleString("es-PE",{
-    minimumFractionDigits:1,
-    maximumFractionDigits:1
+  return Math.round(Number(v)).toLocaleString("es-PE",{
+    minimumFractionDigits:0,
+    maximumFractionDigits:0
   })+"%";
 }
 
@@ -642,6 +663,13 @@ function construirResumen(anio,mesCorte){
     </tr>`;
 
   resumenBody.innerHTML=filas;
+
+  resumenTotalFloat.innerHTML=`
+    <div>TOTAL GENERAL</div>
+    <div>${money(tp)}</div>
+    <div>${money(te)}</div>
+    <div class="${tcls}">${money(td)}</div>
+    <div class="${tcls}">${pct(tdev)}</div>`;
 }
 
 function construirCabecera(mesCorte){
@@ -683,10 +711,19 @@ function celdasMes(anio,rubro,partida,mes,mesCorte){
       <td class="future">—</td>`;
   }
 
+  const hayE=existeMes(EJECUTADO,anio,rubro,partida,mes);
+
+  if(!hayE && e===0){
+    return `
+      <td>${money(p)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>`;
+  }
+
   const d=e-p;
   const dev=porcentaje(d,p);
-  const hayE=existeMes(EJECUTADO,anio,rubro,partida,mes);
-  const cls=claseVariacion(d,p,hayE || e!==0);
+  const cls=claseVariacion(d,p,true);
 
   return `
     <td>${money(p)}</td>
