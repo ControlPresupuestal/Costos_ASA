@@ -401,11 +401,11 @@
 </div>
 
 <script>
-const URL_EJECUTADO =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vSNhwuejRhheBhd2_11G-2i5EoPGomfKlJ5jT8Gvq880CK14XU08f69oS7t4hGSRg/pub?gid=931568793&single=true&output=csv";
+const ID_EJECUTADO = "1cDUw11iIDVa8efxUzg9qi1kZXHZtuqwv";
+const HOJA_EJECUTADO = "EJECUTADO";
 
-const URL_PRESUPUESTO =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vRgKbaYjL3BQ2XoKhJHVlz7_FP2y14dEMnKQdJj7Gk8_9y4KCup3KqciGCPuT31cA/pub?gid=1608844237&single=true&output=csv";
+const ID_PRESUPUESTO = "1kX2tarsvVvwupo9D5RvDcYxEFUoIoMzp";
+const HOJA_PRESUPUESTO = "PRESUPUESTO";
 
 const MESES = [
   {n:1,c:"ENE",l:"Enero"},
@@ -457,37 +457,69 @@ function normalizar(row){
   };
 }
 
-async function cargarCSV(url){
-  const resp = await fetch(url, {cache:"no-store"});
-  if(!resp.ok){
-    throw new Error(`HTTP ${resp.status} al leer ${url}`);
-  }
-
-  const texto = await resp.text();
-
+function cargarGoogleSheet(spreadsheetId, sheetName){
   return new Promise((resolve,reject)=>{
-    Papa.parse(texto,{
-      header:true,
-      skipEmptyLines:true,
-      complete:r=>{
-        try{
-          const data=r.data.map(normalizar)
-            .filter(x=>x.PERIODO && x.RUBRO);
+    const callbackName = "gviz_" + Math.random().toString(36).slice(2);
 
-          if(!data.length){
-            throw new Error("El CSV se descargó, pero no se encontraron filas con PERIODO y RUBRO.");
-          }
+    const limpiar = ()=>{
+      try{ delete window[callbackName]; }catch(e){}
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+    };
 
-          resolve(data);
-        }catch(e){
-          reject(e);
+    window[callbackName] = function(resp){
+      try{
+        if(!resp || resp.status === "error"){
+          const msg = resp && resp.errors && resp.errors.length
+            ? resp.errors.map(e=>e.detailed_message || e.message).join(" | ")
+            : "Google Sheets devolvió un error.";
+          throw new Error(msg);
         }
-      },
-      error:reject
+
+        const table = resp.table;
+        const headers = table.cols.map((c,i)=> txt(c.label || c.id || ("COL"+i)));
+
+        const filas = table.rows.map(r=>{
+          const obj = {};
+          headers.forEach((h,i)=>{
+            const celda = r.c ? r.c[i] : null;
+            obj[h] = celda ? (celda.v ?? celda.f ?? "") : "";
+          });
+          return normalizar(obj);
+        }).filter(x=>x.PERIODO && x.RUBRO);
+
+        if(!filas.length){
+          throw new Error("La hoja se leyó, pero no se encontraron filas con PERIODO y RUBRO.");
+        }
+
+        limpiar();
+        resolve(filas);
+      }catch(err){
+        limpiar();
+        reject(err);
+      }
+    };
+
+    const script = document.createElement("script");
+    const params = new URLSearchParams({
+      sheet: sheetName,
+      tqx: "out:json;responseHandler:" + callbackName,
+      tq: "select *"
     });
+
+    script.src =
+      "https://docs.google.com/spreadsheets/d/" +
+      spreadsheetId +
+      "/gviz/tq?" +
+      params.toString();
+
+    script.onerror = ()=>{
+      limpiar();
+      reject(new Error("No se pudo cargar la hoja " + sheetName + " desde Google Sheets."));
+    };
+
+    document.head.appendChild(script);
   });
 }
-
 function money(v){
   return Number(v||0).toLocaleString("es-PE",{
     minimumFractionDigits:2,
@@ -747,8 +779,8 @@ function render(){
 async function iniciar(){
   try{
     [EJECUTADO,PRESUPUESTO]=await Promise.all([
-      cargarCSV(URL_EJECUTADO),
-      cargarCSV(URL_PRESUPUESTO)
+      cargarGoogleSheet(ID_EJECUTADO, HOJA_EJECUTADO),
+      cargarGoogleSheet(ID_PRESUPUESTO, HOJA_PRESUPUESTO)
     ]);
 
     const setAnios = new Set();
@@ -782,7 +814,7 @@ async function iniciar(){
     console.error(err);
     estado.textContent="Error de conexión";
     error.style.display="block";
-    error.textContent="No se pudieron leer los archivos publicados de Google Sheets. Detalle: " + (err.message || err);
+    error.textContent="No se pudieron leer las hojas de Google Sheets. Detalle: " + (err.message || err);
   }
 }
 
