@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Presupuestal ASA</title>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:_dlc_DocId msdt:dt="string">UT5DNZMK4W5E-800651695-1167892</mso:_dlc_DocId>
+<mso:_dlc_DocIdItemGuid msdt:dt="string">66d3a273-8da4-456e-97cd-00ff811e5fdf</mso:_dlc_DocIdItemGuid>
+<mso:_dlc_DocIdUrl msdt:dt="string">https://agsantaazulperu.sharepoint.com/sites/FS-ASA/_layouts/15/DocIdRedir.aspx?ID=UT5DNZMK4W5E-800651695-1167892, UT5DNZMK4W5E-800651695-1167892</mso:_dlc_DocIdUrl>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+
+<body>
+
+  <h1>Control Presupuestal ASA</h1>
+  <p id="estado">Cargando información...</p>
+
+  <script>
+
+    const URL_EJECUTADO =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzT83l6z5X1p6eRpWpiSIIfZSh72kTKat_EpnSsjMxhBXrn1kAbrNZ2MxOkfwi8w/pub?gid=496723773&single=true&output=csv";
+
+    const URL_PRESUPUESTO =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgKbaYjL3BQ2XoKhJHVlz7_FP2y14dEMnKQdJj7Gk8_9y4KCup3KqciGCPuT31cA/pub?gid=1608844237&single=true&output=csv";
+
+    async function probarConexion() {
+
+      const estado = document.getElementById("estado");
+
+      try {
+
+        const ejecutado = await fetch(URL_EJECUTADO);
+        const presupuesto = await fetch(URL_PRESUPUESTO);
+
+        if (!ejecutado.ok || !presupuesto.ok) {
+          throw new Error("No se pudo acceder a uno de los archivos");
+        }
+
+        const textoEjecutado = await ejecutado.text();
+        const textoPresupuesto = await presupuesto.text();
+
+        const filasEjecutado = textoEjecutado.split("\n").length - 1;
+        const filasPresupuesto = textoPresupuesto.split("\n").length - 1;
+
+        estado.innerHTML =
+          "✅ Conexión correcta<br><br>" +
+          "Ejecutado: " + filasEjecutado.toLocaleString() + " registros<br>" +
+          "Presupuesto: " + filasPresupuesto.toLocaleString() + " registros";
+
+      } catch (error) {
+
+        estado.innerHTML =
+          "❌ Error al leer los archivos.<br>" + error.message;
+
+        console.error(error);
+
+      }
+
+    }
+
+    probarConexion();
+
+  </script>
+
+</body>
+</html>
