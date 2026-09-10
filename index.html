@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -324,14 +324,6 @@
       .wrap{padding:12px}
     }
   </style>
-
-<!--[if gte mso 9]><xml>
-<mso:CustomDocumentProperties>
-<mso:_dlc_DocId msdt:dt="string">UT5DNZMK4W5E-800651695-1167894</mso:_dlc_DocId>
-<mso:_dlc_DocIdItemGuid msdt:dt="string">a153a589-618a-4793-865d-8832bafc946c</mso:_dlc_DocIdItemGuid>
-<mso:_dlc_DocIdUrl msdt:dt="string">https://agsantaazulperu.sharepoint.com/sites/FS-ASA/_layouts/15/DocIdRedir.aspx?ID=UT5DNZMK4W5E-800651695-1167894, UT5DNZMK4W5E-800651695-1167894</mso:_dlc_DocIdUrl>
-</mso:CustomDocumentProperties>
-</xml><![endif]-->
 </head>
 
 <body>
@@ -410,7 +402,7 @@
 
 <script>
 const URL_EJECUTADO =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vRzT83l6z5X1p6eRpWpiSIIfZSh72kTKat_EpnSsjMxhBXrn1kAbrNZ2MxOkfwi8w/pub?gid=496723773&single=true&output=csv";
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vSNhwuejRhheBhd2_11G-2i5EoPGomfKlJ5jT8Gvq880CK14XU08f69oS7t4hGSRg/pub?gid=931568793&single=true&output=csv";
 
 const URL_PRESUPUESTO =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgKbaYjL3BQ2XoKhJHVlz7_FP2y14dEMnKQdJj7Gk8_9y4KCup3KqciGCPuT31cA/pub?gid=1608844237&single=true&output=csv";
@@ -562,7 +554,7 @@ function listaPartidas(anio,rubro){
 function construirResumen(anio,mesCorte){
   const rubros=listaRubros(anio);
 
-  resumenBody.innerHTML=rubros.map(rubro=>{
+  let filas=rubros.map(rubro=>{
     const p=suma(PRESUPUESTO,anio,rubro,null,mesCorte);
     const e=suma(EJECUTADO,anio,rubro,null,mesCorte);
     const d=e-p;
@@ -578,6 +570,23 @@ function construirResumen(anio,mesCorte){
         <td class="${cls}">${pct(dev)}</td>
       </tr>`;
   }).join("");
+
+  const tp=suma(PRESUPUESTO,anio,null,null,mesCorte);
+  const te=suma(EJECUTADO,anio,null,null,mesCorte);
+  const td=te-tp;
+  const tdev=porcentaje(td,tp);
+  const tcls=claseVariacion(td,tp,true);
+
+  filas += `
+    <tr style="font-weight:900;background:#eaf0f5">
+      <td><strong>TOTAL GENERAL</strong></td>
+      <td><strong>${money(tp)}</strong></td>
+      <td><strong>${money(te)}</strong></td>
+      <td class="${tcls}"><strong>${money(td)}</strong></td>
+      <td class="${tcls}"><strong>${pct(tdev)}</strong></td>
+    </tr>`;
+
+  resumenBody.innerHTML=filas;
 }
 
 function construirCabecera(mesCorte){
@@ -681,6 +690,15 @@ function construirMensual(anio,mesCorte){
       });
     }
   });
+
+  // TOTAL GENERAL mensual
+  html+=`<tr class="rubro-row" style="font-weight:900;background:#eaf0f5">
+    <td><strong>TOTAL GENERAL</strong></td>`;
+  MESES.forEach(m=>{
+    html+=celdasMes(anio,null,null,m.n,mesCorte);
+  });
+  html+=celdasTotal(anio,null,null,mesCorte);
+  html+=`</tr>`;
 
   mensualBody.innerHTML=html;
 
