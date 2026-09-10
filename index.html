@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,14 +27,6 @@ tbody tr.rubro td{background:#fff;font-weight:800}tbody tr.rubro td:first-child{
 .status{margin-top:6px;font-size:11px;color:#667085;text-align:right}.error{display:none;background:#fff1f2;color:#8a1c1c;border:1px solid #fecdd3;padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:12px}
 @media(max-width:1100px){.cards{grid-template-columns:1fr 1fr}.visual-grid{grid-template-columns:1fr}.top{flex-direction:column}.toolbar{width:100%}}
 </style>
-
-<!--[if gte mso 9]><xml>
-<mso:CustomDocumentProperties>
-<mso:_dlc_DocId msdt:dt="string">UT5DNZMK4W5E-800651695-1167904</mso:_dlc_DocId>
-<mso:_dlc_DocIdItemGuid msdt:dt="string">fd5deb96-23fd-4912-827e-e58320caad68</mso:_dlc_DocIdItemGuid>
-<mso:_dlc_DocIdUrl msdt:dt="string">https://agsantaazulperu.sharepoint.com/sites/FS-ASA/_layouts/15/DocIdRedir.aspx?ID=UT5DNZMK4W5E-800651695-1167904, UT5DNZMK4W5E-800651695-1167904</mso:_dlc_DocIdUrl>
-</mso:CustomDocumentProperties>
-</xml><![endif]-->
 </head>
 <body>
 <div class="wrap">
@@ -81,8 +73,30 @@ function anioP(p){return p.slice(0,4)}function mesP(p){return Number(p.slice(4,6
 function esInv(r){r=txt(r).toUpperCase();return r.startsWith("R51 ")||r==="R51"||r.includes("INVERSION")}
 function suma(base,anio,mesCorte,rubro=null,partida=null,mesExact=null){return base.reduce((a,x)=>{if(anioP(x.PERIODO)!==anio)return a;const m=mesP(x.PERIODO);if(m<1||m>mesCorte)return a;if(mesExact!==null&&m!==mesExact)return a;if(!incluirInversiones&&esInv(x.RUBRO))return a;if(rubro!==null&&x.RUBRO!==rubro)return a;if(partida!==null&&x.PARTIDA!==partida)return a;return a+x.IMPORTE},0)}
 function existeEjec(anio,r,p,m){return EJECUTADO.some(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)===m&&(incluirInversiones||!esInv(x.RUBRO))&&(r===null||x.RUBRO===r)&&(p===null||x.PARTIDA===p))}
-function listaRubros(anio,mesCorte){return [...new Set([...PRESUPUESTO,...EJECUTADO].filter(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)<=mesCorte&&(incluirInversiones||!esInv(x.RUBRO))).map(x=>x.RUBRO))].sort((a,b)=>a.localeCompare(b,"es"))}
-function listaPartidas(anio,mesCorte,r){return [...new Set([...PRESUPUESTO,...EJECUTADO].filter(x=>anioP(x.PERIODO)===anio&&mesP(x.PERIODO)<=mesCorte&&x.RUBRO===r).map(x=>x.PARTIDA||"(SIN PARTIDA)"))].sort((a,b)=>a.localeCompare(b,"es"))}
+function listaRubros(anio,mesCorte){
+  const s=new Set();
+  for(const base of [PRESUPUESTO,EJECUTADO]){
+    for(const x of base){
+      if(anioP(x.PERIODO)!==anio) continue;
+      if(mesP(x.PERIODO)>mesCorte) continue;
+      if(!incluirInversiones&&esInv(x.RUBRO)) continue;
+      if(x.RUBRO) s.add(x.RUBRO);
+    }
+  }
+  return Array.from(s).sort((a,b)=>a.localeCompare(b,"es"));
+}
+function listaPartidas(anio,mesCorte,r){
+  const s=new Set();
+  for(const base of [PRESUPUESTO,EJECUTADO]){
+    for(const x of base){
+      if(anioP(x.PERIODO)!==anio) continue;
+      if(mesP(x.PERIODO)>mesCorte) continue;
+      if(x.RUBRO!==r) continue;
+      s.add(x.PARTIDA||"(SIN PARTIDA)");
+    }
+  }
+  return Array.from(s).sort((a,b)=>a.localeCompare(b,"es"));
+}
 function money(v){return Math.round(Number(v||0)).toLocaleString("es-PE")}function dev(d,p){return p===0?null:d/p*100}function pct(v){return v===null?"—":Math.round(v).toLocaleString("es-PE")+"%"}function cls(d){return d>0?"diff-red":d<0?"diff-blue":"diff-neutral"}
 
 function renderKpis(a,m){const p=suma(PRESUPUESTO,a,m),e=suma(EJECUTADO,a,m),d=e-p,v=dev(d,p);kPpto.textContent=money(p);kEjec.textContent=money(e);kDif.textContent=money(d);kDev.textContent=pct(v);kDif.className="kpi-value "+cls(d);kDev.className="kpi-value "+cls(d);kDifLabel.textContent=d>0?"Exceso":d<0?"Ahorro":"Sin variación";kDifLabel.className="kpi-sub "+(d>0?"red":d<0?"blue":"muted")}
@@ -93,7 +107,16 @@ function cellsMes(a,m,r,p,me){const pp=suma(PRESUPUESTO,a,m,r,p,me),ee=suma(EJEC
 function cellsTot(a,m,r,p){const pp=suma(PRESUPUESTO,a,m,r,p),ee=suma(EJECUTADO,a,m,r,p),d=ee-pp,v=dev(d,pp);return `<td>${money(pp)}</td><td>${money(ee)}</td><td class="${cls(d)}">${money(d)}</td><td class="${cls(d)}">${pp===0&&ee!==0?"SIN PPTO.":pct(v)}</td>`}
 function renderTable(a,m){head();let h="";listaRubros(a,m).forEach(r=>{const o=rubrosAbiertos.has(r);h+=`<tr class="rubro"><td><span class="toggle" data-r="${encodeURIComponent(r)}">${o?"−":"+"}</span>${r}</td>`;MESES.forEach(x=>h+=cellsMes(a,m,r,null,x[1]));h+=cellsTot(a,m,r,null)+"</tr>";if(o)listaPartidas(a,m,r).forEach(p=>{const real=p==="(SIN PARTIDA)"?"":p;h+=`<tr class="partida"><td>↳ ${p}</td>`;MESES.forEach(x=>h+=cellsMes(a,m,r,real,x[1]));h+=cellsTot(a,m,r,real)+"</tr>"})});const tp=suma(PRESUPUESTO,a,m),te=suma(EJECUTADO,a,m),td=te-tp,tv=dev(td,tp);h+='<tr class="total"><td>TOTAL GENERAL</td>';MESES.forEach(x=>h+=cellsMes(a,m,null,null,x[1]));h+=cellsTot(a,m,null,null)+"</tr>";tbody.innerHTML=h;floatingTotal.innerHTML=`<div>TOTAL GENERAL</div><div>${money(tp)}</div><div>${money(te)}</div><div class="${cls(td)}">${money(td)}</div><div class="${cls(td)}">${pct(tv)}</div>`;document.querySelectorAll(".toggle").forEach(el=>el.onclick=()=>{const r=decodeURIComponent(el.dataset.r);rubrosAbiertos.has(r)?rubrosAbiertos.delete(r):rubrosAbiertos.add(r);renderTable(fAnio.value,Number(fPeriodo.value))})}
 function render(){const a=fAnio.value,m=Number(fPeriodo.value);renderKpis(a,m);renderChart(a,m);renderRank(a,m);renderTable(a,m)}
-async function iniciar(){try{[EJECUTADO,PRESUPUESTO]=await Promise.all([cargarGoogleSheet(ID_EJECUTADO,HOJA_EJECUTADO),cargarGoogleSheet(ID_PRESUPUESTO,HOJA_PRESUPUESTO)]);const years=[...new Set([...EJECUTADO,...PRESUPUESTO].map(x=>anioP(x.PERIODO)).filter(Boolean))].sort();fAnio.innerHTML=years.map(a=>`<option>${a}</option>`).join("");fAnio.value=years.at(-1);fPeriodo.innerHTML=MESES.map(x=>`<option value="${x[1]}">Ene – ${x[0][0]+x[0].slice(1).toLowerCase()}</option>`).join("");const maxm=Math.max(...EJECUTADO.filter(x=>anioP(x.PERIODO)===fAnio.value).map(x=>mesP(x.PERIODO)).filter(x=>x>=1&&x<=12));fPeriodo.value=maxm||12;fAnio.onchange=()=>{rubrosAbiertos.clear();render()};fPeriodo.onchange=render;switchInv.onclick=()=>{incluirInversiones=!incluirInversiones;switchInv.classList.toggle("on",incluirInversiones);switchLabel.textContent=incluirInversiones?"Sí":"No";rubrosAbiertos.clear();render()};estado.textContent=`Conectado · Ejecutado: ${EJECUTADO.length.toLocaleString("es-PE")} filas · Presupuesto: ${PRESUPUESTO.length.toLocaleString("es-PE")} filas`;render()}catch(err){console.error(err);estado.textContent="Error de conexión";error.style.display="block";error.textContent="No se pudieron leer las hojas de Google Sheets. Detalle: "+(err.message||err)}}
+async function iniciar(){try{[EJECUTADO,PRESUPUESTO]=await Promise.all([cargarGoogleSheet(ID_EJECUTADO,HOJA_EJECUTADO),cargarGoogleSheet(ID_PRESUPUESTO,HOJA_PRESUPUESTO)]);const yearSet=new Set();
+for(const x of EJECUTADO){const a=anioP(x.PERIODO);if(a)yearSet.add(a);}
+for(const x of PRESUPUESTO){const a=anioP(x.PERIODO);if(a)yearSet.add(a);}
+const years=Array.from(yearSet).sort();fAnio.innerHTML=years.map(a=>`<option>${a}</option>`).join("");fAnio.value=years.at(-1);fPeriodo.innerHTML=MESES.map(x=>`<option value="${x[1]}">Ene – ${x[0][0]+x[0].slice(1).toLowerCase()}</option>`).join("");let maxm=0;
+for(const x of EJECUTADO){
+  if(anioP(x.PERIODO)!==fAnio.value) continue;
+  const mm=mesP(x.PERIODO);
+  if(mm>=1&&mm<=12&&mm>maxm) maxm=mm;
+}
+fPeriodo.value=maxm||12;fAnio.onchange=()=>{rubrosAbiertos.clear();render()};fPeriodo.onchange=render;switchInv.onclick=()=>{incluirInversiones=!incluirInversiones;switchInv.classList.toggle("on",incluirInversiones);switchLabel.textContent=incluirInversiones?"Sí":"No";rubrosAbiertos.clear();render()};estado.textContent=`Conectado · Ejecutado: ${EJECUTADO.length.toLocaleString("es-PE")} filas · Presupuesto: ${PRESUPUESTO.length.toLocaleString("es-PE")} filas`;render()}catch(err){console.error(err);estado.textContent="Error de conexión";error.style.display="block";error.textContent="No se pudieron leer las hojas de Google Sheets. Detalle: "+(err.message||err)}}
 iniciar();
 </script>
 </body>
